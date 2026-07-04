@@ -1,4 +1,5 @@
 import * as FileSystem from 'expo-file-system/legacy';
+import { Image } from 'expo-image';
 import { useState } from 'react';
 import { Linking, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -26,6 +27,7 @@ const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Frid
 
 function KeyGuide({ title, steps, url }: { title: string; steps: string[]; url: string }) {
   const [open, setOpen] = useState(false);
+  const [showDemo, setShowDemo] = useState(false);
   return (
     <View style={{ marginTop: 4 }}>
       <Pressable onPress={() => setOpen((v) => !v)} hitSlop={6}>
@@ -45,6 +47,24 @@ function KeyGuide({ title, steps, url }: { title: string; steps: string[]; url: 
               Open {title} ↗
             </Text>
           </Pressable>
+          <Pressable onPress={() => setShowDemo((v) => !v)} hitSlop={6}>
+            <Text style={{ color: C.ember, fontSize: F.small, fontWeight: '600', marginTop: 6 }}>
+              {showDemo ? '▼ hide demo' : '▶ show me how (animated demo)'}
+            </Text>
+          </Pressable>
+          {showDemo && (
+            <Image
+              source={require('../../assets/guides/add-api-key.gif')}
+              style={{
+                width: '100%',
+                aspectRatio: 1568 / 489,
+                borderRadius: 8,
+                marginTop: 6,
+                backgroundColor: '#000',
+              }}
+              contentFit="contain"
+            />
+          )}
         </View>
       )}
     </View>

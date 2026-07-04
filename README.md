@@ -1,56 +1,60 @@
-# Welcome to your Expo app 👋
+# IRONED ⚔️
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A gamified workout tracker + AI meal logger, inspired by Hevy and Solo Leveling.
+No login. No paywall. All data stays on your device.
 
-## Get started
+## Features
 
-1. Install dependencies
+- **Workouts**: custom plans, drag-to-reorder, per-set reps/weight, auto rest timer,
+  supersets, machine/home exercise variants, animated demos with common-mistake warnings,
+  plate calculator, pause/resume with honest timing
+- **Gamification**: XP, levels, ranks E→S with an evolving companion pet, PR detection,
+  tiered achievements, streaks (rest-day aware), level-up animations (bolt / slashes /
+  screen-tear / wall-punch)
+- **Meals**: photo → AI macro breakdown (multi-photo), barcode scanning
+  (Open Food Facts + USDA fallback), calorie/protein/carb/fat/sodium goals with a
+  research-based TDEE calculator, favourites & quick-add, water tracking
+- **Progress**: weekly volume chart, per-exercise est. 1RM trends, calendar heatmap,
+  body measurements + private progress photos
+- **Yours**: 3 UI styles (Modern / Boxy / Alien) × 3 backgrounds × 5 accents, custom
+  greeting, weekly or rotating-cycle schedules, JSON backups (photos included)
 
-   ```bash
-   npm install
-   ```
+## API keys (free, optional)
 
-2. Start the app
+Two features use free external APIs — you bring your own keys, entered inside the app
+(**Settings → API keys**, with step-by-step guides):
 
-   ```bash
-   npx expo start
-   ```
+| Feature | Provider | Where to get the key |
+|---|---|---|
+| Exercise demo GIFs | ExerciseDB (RapidAPI) | rapidapi.com → ExerciseDB → free Basic plan |
+| Meal photo → macros | Google Gemini | aistudio.google.com → "Create API key" |
 
-In the output, you'll find options to open the app in a
+![How to add an API key](docs/add-api-key.gif)
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Everything else works without any keys.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Updates
 
-## Get a fresh project
+The app checks this repo's **Releases** for new versions
+(Settings → About & updates). Releases are tagged `v1.2.3` with the APK attached.
 
-When you're ready, run:
+## Development
 
 ```bash
-npm run reset-project
+npm install
+cp src/lib/config.example.ts src/lib/config.ts   # keys optional
+npx expo start --tunnel                           # Expo Go (SDK 57) on your phone
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Build an APK (cloud, no Android SDK needed):
 
-### Other setup steps
+```bash
+npm i -g eas-cli && eas login
+eas build -p android --profile preview
+```
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+See `DEV-GUIDE-OTHER-PC.txt` for the full setup, OTA-update workflow and quirks.
 
-## Learn more
+## License
 
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+MIT — exercise images from [free-exercise-db](https://github.com/yuhonas/free-exercise-db) (MIT).
