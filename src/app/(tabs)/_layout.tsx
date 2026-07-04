@@ -239,8 +239,9 @@ export default function TabLayout() {
             tabBarButton: TabButton,
             tabBarStyle: S.freeform
               ? {
-                  // alien: floating shapes on the raw background, no bar chrome
-                  backgroundColor: C.bg,
+                  // alien: fully transparent, absolute — the shapes float over the content
+                  position: 'absolute' as const,
+                  backgroundColor: 'transparent',
                   borderTopWidth: 0,
                   elevation: 0,
                   height: 70 + insets.bottom,

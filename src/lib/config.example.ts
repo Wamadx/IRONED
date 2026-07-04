@@ -11,7 +11,7 @@ export const EXERCISEDB_API_KEY = '';
 export const GEMINI_API_KEY = '';
 
 // Current app version — bump on every release; compared against GitHub releases.
-export const APP_VERSION = '0.9.0';
+export const APP_VERSION = '1.0.0';
 
 // GitHub repo for the in-app update checker, e.g. 'yourname/mort-hevyclone'.
 export const GITHUB_REPO = '';

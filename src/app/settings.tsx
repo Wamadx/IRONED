@@ -3,14 +3,12 @@ import { useState } from 'react';
 import { Linking, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { LevelUpOverlay } from '@/components/level-up';
 import { Btn, Card, ConfirmBtn, Dim, H2, NumInput } from '@/components/ui';
 import { checkForUpdate } from '@/lib/app-updates';
 import { exportBackup, importBackup } from '@/lib/backup';
 import { APP_VERSION } from '@/lib/config';
 import { syncReminders } from '@/lib/reminders';
 import { cycleIndexForDate } from '@/lib/schedule';
-import { levelInfo, totalXp } from '@/lib/xp';
 import { useApp } from '@/lib/store';
 import {
   ACCENTS,
@@ -87,11 +85,8 @@ export default function Settings() {
   const setPageAnimations = useApp((s) => s.setPageAnimations);
   const greeting = useApp((s) => s.greeting);
   const setGreeting = useApp((s) => s.setGreeting);
-  const seedDemoData = useApp((s) => s.seedDemoData);
   const resetAll = useApp((s) => s.resetAll);
-  const workouts = useApp((s) => s.workouts);
   const [dataMsg, setDataMsg] = useState('');
-  const [previewLevel, setPreviewLevel] = useState<number | null>(null);
   const [updateMsg, setUpdateMsg] = useState('');
   const [updateUrl, setUpdateUrl] = useState<string | null>(null);
 
@@ -564,35 +559,6 @@ export default function Settings() {
         />
         {dataMsg !== '' && <Dim small>{dataMsg}</Dim>}
       </Card>
-
-      <Card>
-        <H2>Testing</H2>
-        <Dim small>
-          Inject ~18 fake workouts over the past 4 weeks plus a few placeholder meals — for testing
-          charts, PRs, streaks and the quick-add recent meals.
-        </Dim>
-        <ConfirmBtn
-          label="Generate fake history & meals"
-          confirmLabel="Tap again to inject fake data"
-          kind="ghost"
-          icon="flask-outline"
-          style={{ marginTop: 10 }}
-          onConfirm={seedDemoData}
-        />
-        <Dim small>Remove them later via trash icons or the reset below.</Dim>
-        <Btn
-          label="Preview level-up animation"
-          icon="flash-outline"
-          kind="ghost"
-          style={{ marginTop: 10 }}
-          onPress={() => setPreviewLevel(levelInfo(totalXp(workouts)).level + 1)}
-        />
-        <Dim small>Cycles randomly between the bolt / samurai slash / screen-tear variants.</Dim>
-      </Card>
-
-      {previewLevel !== null && (
-        <LevelUpOverlay level={previewLevel} onDone={() => setPreviewLevel(null)} />
-      )}
 
       <Card>
         <H2>About & updates</H2>

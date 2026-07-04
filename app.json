@@ -1,17 +1,18 @@
 {
   "expo": {
-    "name": "mort_HEVYclone",
-    "slug": "mort_HEVYclone",
+    "name": "IRONED",
+    "slug": "ironed",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "morthevyclone",
+    "scheme": "ironed",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#0B0909",
     "ios": {
       "icon": "./assets/expo.icon"
     },
     "android": {
+      "package": "com.sukago.ironed",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
