@@ -25,9 +25,8 @@ import {
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-function KeyGuide({ title, steps, url }: { title: string; steps: string[]; url: string }) {
+function KeyGuide({ title, steps, url, showDemo: _showDemo = false }: { title: string; steps: string[]; url: string; showDemo?: boolean }) {
   const [open, setOpen] = useState(false);
-  const [showDemo, setShowDemo] = useState(false);
   return (
     <View style={{ marginTop: 4 }}>
       <Pressable onPress={() => setOpen((v) => !v)} hitSlop={6}>
@@ -44,27 +43,9 @@ function KeyGuide({ title, steps, url }: { title: string; steps: string[]; url: 
           ))}
           <Pressable onPress={() => Linking.openURL(url)} hitSlop={6}>
             <Text style={{ color: C.red, fontSize: F.small, fontWeight: '600', marginTop: 4 }}>
-              Open {title} ↗
+              Open {title} →
             </Text>
           </Pressable>
-          <Pressable onPress={() => setShowDemo((v) => !v)} hitSlop={6}>
-            <Text style={{ color: C.ember, fontSize: F.small, fontWeight: '600', marginTop: 6 }}>
-              {showDemo ? '▼ hide demo' : '▶ show me how (animated demo)'}
-            </Text>
-          </Pressable>
-          {showDemo && (
-            <Image
-              source={require('../../assets/guides/add-api-key.gif')}
-              style={{
-                width: '100%',
-                aspectRatio: 1568 / 489,
-                borderRadius: 8,
-                marginTop: 6,
-                backgroundColor: '#000',
-              }}
-              contentFit="contain"
-            />
-          )}
         </View>
       )}
     </View>
