@@ -41,3 +41,9 @@ example
 # generated native folders
 /ios
 /android
+
+# API keys live here — copy src/lib/config.example.ts to config.ts and fill in
+src/lib/config.ts
+
+# local build verification output
+dist-check/

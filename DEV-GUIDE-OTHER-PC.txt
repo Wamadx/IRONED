@@ -1,0 +1,87 @@
+================================================================
+ mort_HEVYclone — DEVELOPMENT GUIDE FOR SETTING UP ON ANOTHER PC
+================================================================
+
+WHAT TO TRANSFER
+----------------
+Zip the project folder BUT DELETE node_modules/ first (it's huge and
+platform-specific — you reinstall it in 30s on the other PC).
+Also safe to delete: .expo/, dist-check/ if present.
+KEEP the .git folder — it carries the repo history for GitHub.
+
+ENVIRONMENT REQUIRED ON THE OTHER PC
+------------------------------------
+1. Node.js 20+ LTS (this project was built on Node 24) — nodejs.org
+2. Git — git-scm.com
+3. A code editor (VS Code) — optional but recommended
+4. Expo account (free) — expo.dev — needed for EAS builds/updates
+5. NO Android Studio / JDK needed — EAS builds happen in Expo's cloud.
+   (Only install Android SDK if you ever want local `gradlew` builds.)
+
+FIRST-TIME SETUP AFTER TRANSFER
+-------------------------------
+  cd mort_HEVYclone
+  npm install                          # restores node_modules
+  # if src/lib/config.ts is missing (fresh git clone):
+  #   copy src\lib\config.example.ts src\lib\config.ts   (then fill keys)
+  npx expo start --tunnel              # dev server; scan QR with Expo Go (SDK 57 from expo.dev/go)
+
+VERIFY A CHANGE COMPILES (what Claude ran after every change)
+  npx tsc --noEmit                     # typecheck
+  npx expo export --platform android --output-dir dist-check   # full bundle check
+
+GITHUB SETUP (you said you'll do this on the other PC)
+------------------------------------------------------
+The repo is already initialized locally with an initial commit.
+  git remote add origin https://github.com/YOURNAME/YOURREPO.git
+  git push -u origin main
+IMPORTANT: src/lib/config.ts is gitignored (it holds API keys).
+config.example.ts is committed instead. Never force-add config.ts.
+
+BUILDING THE APK (EAS Build, cloud — free tier)
+-----------------------------------------------
+  npm install -g eas-cli               # once
+  eas login
+  eas build:configure                  # once; creates eas.json + android package id
+  eas build -p android --profile preview    # produces an installable .apk link
+Before the FIRST public build (agreed checklist):
+  1. Rename app: app.json → "name", "slug"; eas will ask for android package name
+  2. Blank both API keys in src/lib/config.ts (users add keys in-app via Settings)
+  3. Remove the Settings → Testing card (fake data + level-up preview buttons)
+  4. App icon/splash images in assets/images/
+
+PUSHING UPDATES WITHOUT A NEW APK (over-the-air JS updates)
+-----------------------------------------------------------
+Use EAS Update — ships new JS/assets to installed apps on launch:
+  npx expo install expo-updates        # once, before building the APK
+  eas update:configure                 # once
+  eas build -p android --profile preview    # rebuild once WITH expo-updates inside
+  # ...from then on, after any JS change:
+  eas update --branch preview --message "what changed"
+Users get the update next app restart. Native-module changes still
+need a new APK (that's what the GitHub release checker is for).
+
+APK-LEVEL UPDATES VIA GITHUB RELEASES (already built into the app)
+------------------------------------------------------------------
+1. Set GITHUB_REPO in src/lib/config.ts, e.g. 'yourname/mort-hevyclone'
+2. Bump APP_VERSION in the same file for each release (e.g. '1.1.0')
+3. On GitHub: create a Release tagged v1.1.0 and attach the new APK file
+4. Users: Settings → About & updates → "Check for updates" →
+   compares versions → "Open download page" links to your release.
+
+API KEYS (for your own use on the new PC)
+-----------------------------------------
+ExerciseDB (exercise GIFs): rapidapi.com → search ExerciseDB → free Basic plan
+Gemini (meal photo AI):     aistudio.google.com → Get API key
+Enter them in-app via Settings → API keys (preferred), or in config.ts.
+
+QUIRKS WORTH KNOWING
+--------------------
+- After ANY `npm install`, restart the dev server with:  npx expo start --tunnel -c
+  (Metro serves stale bundles otherwise.)
+- Expo Go from the Play Store lags behind SDK 57 — install Expo Go from
+  https://expo.dev/go on the phone.
+- Never test GIF quota behaviour in the web browser (no file cache there);
+  use the phone.
+- ExerciseDB quota is 690 requests/month — the app caches every image
+  after first view, so normal use is nearly free.

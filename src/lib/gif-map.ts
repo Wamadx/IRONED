@@ -1,0 +1,138 @@
+/**
+ * Baked-in demo media map, keyed by lowercase exercise/move name.
+ * `db`  = ExerciseDB exercise id (animated GIF via their /image endpoint, needs API key)
+ * `img` = folder name in free-exercise-db (two demo frames, keyless, MIT-licensed —
+ *         the app cycles the frames so these render animated, never static)
+ *
+ * Built offline from a full catalog crawl so the app never calls the ExerciseDB
+ * *search* endpoint — only the image endpoint, and those bytes are cached locally.
+ * Regenerate with scratchpad/build-gif-map.js if exercises change.
+ */
+export type GifMapEntry = { db: string } | { img: string };
+
+export const GIF_MAP: Record<string, GifMapEntry> = {
+  // ── chest ──
+  'bench press': { db: '0025' },
+  'incline bench press': { db: '0047' },
+  'dumbbell bench press': { db: '0289' },
+  'incline dumbbell press': { db: '0314' },
+  'dumbbell floor press': { img: 'Dumbbell_Floor_Press' },
+  'cable fly': { db: '0171' },
+  'push-up': { db: '0662' },
+  'incline push-up': { db: '0493' },
+  'decline push-up': { db: '0279' },
+  'diamond push-up': { db: '0283' },
+  'archer push-up': { db: '3294' },
+  'chest dip': { db: '0251' },
+  'chair dip': { db: '0129' },
+  // ── back ──
+  deadlift: { db: '0032' },
+  'barbell row': { db: '0027' },
+  'dumbbell row': { db: '0293' },
+  'lat pulldown': { db: '0198' },
+  'seated cable row': { db: '0861' },
+  'pull-up': { db: '0652' },
+  'chin-up': { db: '1326' },
+  'inverted row (table/bar)': { db: '0499' },
+  'face pull': { img: 'Face_Pull' },
+  'back extension': { db: '0489' },
+  'barbell shrug': { db: '0095' },
+  // ── shoulders ──
+  'overhead press': { db: '1456' },
+  'dumbbell shoulder press': { db: '2137' },
+  'lateral raise': { db: '0334' },
+  'rear delt fly': { db: '0380' },
+  'pike push-up': { db: '1296' },
+  'handstand push-up (wall)': { db: '0471' },
+  // ── arms ──
+  'barbell curl': { db: '0031' },
+  'dumbbell curl': { db: '0294' },
+  'hammer curl': { db: '0313' },
+  'cable pushdown': { db: '0201' },
+  skullcrusher: { db: '0061' },
+  'overhead triceps extension': { db: '0430' },
+  'close-grip bench press': { db: '0030' },
+  // ── legs ──
+  'barbell squat': { db: '0043' },
+  'front squat': { db: '0042' },
+  'goblet squat': { db: '1760' },
+  'leg press': { db: '0739' },
+  'leg extension': { db: '0585' },
+  'leg curl': { db: '0586' },
+  'romanian deadlift': { db: '0085' },
+  'dumbbell romanian deadlift': { db: '1459' },
+  'single-leg rdl': { db: '1757' },
+  'bulgarian split squat': { db: '0410' },
+  'walking lunge': { db: '1460' },
+  'step-up': { db: '0114' },
+  'hip thrust': { db: '1409' },
+  'glute bridge': { db: '3013' },
+  'jump squat': { db: '0514' },
+  'standing calf raise': { db: '1490' },
+  'calf raise (bodyweight/db)': { db: '1490' },
+  'seated calf raise': { db: '0594' },
+  // ── core ──
+  'plank (secs as reps)': { db: '2135' },
+  'hanging leg raise': { db: '0472' },
+  'cable crunch': { db: '0175' },
+  'bicycle crunch': { db: '0972' },
+  'russian twist': { db: '0687' },
+  'ab wheel rollout': { db: '0857' },
+  'mountain climber': { db: '0630' },
+  // ── full body / conditioning ──
+  'kettlebell swing': { db: '0549' },
+  'farmer carry (secs as reps)': { db: '2133' },
+  burpee: { db: '1160' },
+  // ── cardio ──
+  running: { db: '0685' },
+  cycling: { db: '2138' },
+  'incline walk': { db: '3666' },
+  'interval sprints': { db: '0685' },
+  'rowing machine': { img: 'Rowing_Stationary' },
+  'stair climber': { img: 'Stairmaster' },
+  'jump rope': { db: '2612' },
+  'dead hang': { db: '0688' },
+  'wall sit': { db: '0624' },
+  'hollow hold (secs as reps)': { img: 'Flutter_Kicks' },
+  // ── machines ──
+  'machine chest press': { db: '0576' },
+  'pec deck fly': { db: '0596' },
+  'machine shoulder press': { db: '0603' },
+  'machine lateral raise': { db: '0584' },
+  'machine seated row': { db: '1350' },
+  'machine preacher curl': { db: '0592' },
+  'machine seated dip': { db: '1451' },
+  'hack squat (sled)': { db: '0743' },
+  'machine seated crunch': { db: '1452' },
+  // ── warmup moves ──
+  'arm circles': { img: 'Arm_Circles' },
+  'scapular push-up': { db: '3021' },
+  'scapular pull-up': { db: '0688' },
+  'cat cow': { img: 'Cat_Stretch' },
+  'biceps curl': { db: '0294' },
+  squat: { db: '3533' },
+  'good morning': { db: '0115' },
+  'hip hinge': { db: '0115' },
+  'leg swing': { img: 'Standing_Hip_Circles' },
+  'hip circle': { img: 'Standing_Hip_Circles' },
+  'shoulder dislocate': { img: 'Shoulder_Circles' },
+  'elbow circles': { img: 'Elbow_Circles' },
+  'ankle circle': { db: '1368' },
+  'dead bug': { db: '0276' },
+  'jumping jack': { db: '3224' },
+  walk: { db: '3666' },
+  // ── cooldown stretches ──
+  'chest stretch': { db: '1272' },
+  'shoulder stretch': { db: '1271' },
+  'child pose': { img: 'Childs_Pose' },
+  'lat stretch': { img: 'Overhead_Lat' },
+  'biceps stretch': { img: 'Standing_Biceps_Stretch' },
+  'triceps stretch': { db: '0817' },
+  'quadriceps stretch': { img: 'Quad_Stretch' },
+  'hamstring stretch': { db: '1511' },
+  'piriformis stretch': { db: '1710' },
+  'calf stretch': { db: '1377' },
+  'standing forward bend': { img: 'Standing_Toe_Touches' },
+  'upward stretch': { img: 'Upward_Stretch' },
+  // intentionally no demo: deep breathing (nothing to show)
+};
