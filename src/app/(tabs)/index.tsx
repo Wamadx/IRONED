@@ -7,7 +7,7 @@ import { Btn, Card, Dim, H2, Title } from '@/components/ui';
 import { getGoal } from '@/lib/physique';
 import { slotForDate } from '@/lib/schedule';
 import { useApp } from '@/lib/store';
-import { C, F } from '@/lib/theme';
+import { C, F, S } from '@/lib/theme';
 
 export default function Home() {
   const router = useRouter();
@@ -41,7 +41,8 @@ export default function Home() {
       contentContainerStyle={{
         padding: 16,
         paddingTop: insets.top + 16,
-        paddingBottom: 32 + insets.bottom,
+        // alien tab bar floats over content — leave room so nothing hides behind it
+        paddingBottom: 32 + insets.bottom + (S.freeform ? 84 : 0),
       }}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <Title>{greeting}</Title>

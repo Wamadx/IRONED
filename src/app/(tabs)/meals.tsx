@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Btn, Card, Dim, H2, NumInput, Title, TrashConfirm } from '@/components/ui';
 import { useApp } from '@/lib/store';
-import { C, F } from '@/lib/theme';
+import { C, F, S } from '@/lib/theme';
 
 function sameDay(a: number, b: number): boolean {
   const da = new Date(a);
@@ -234,7 +234,7 @@ export default function Meals() {
       contentContainerStyle={{
         padding: 16,
         paddingTop: insets.top + 16,
-        paddingBottom: 32 + insets.bottom,
+        paddingBottom: 32 + insets.bottom + (S.freeform ? 84 : 0),
       }}
       keyboardShouldPersistTaps="handled">
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>

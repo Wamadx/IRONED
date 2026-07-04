@@ -8,6 +8,12 @@ const FREE_DB = 'https://yuhonas.github.io/free-exercise-db/exercises';
 /** user-provided key from settings wins over the baked-in dev key */
 const dbKey = () => useApp.getState().apiKeys.exercisedb || EXERCISEDB_API_KEY;
 
+/** true when this move HAS a demo but it can't load because no ExerciseDB key is set */
+export function demoNeedsKey(name: string): boolean {
+  const entry = GIF_MAP[name.toLowerCase()];
+  return !!entry && 'db' in entry && !dbKey();
+}
+
 export type GifSource =
   | { kind: 'gif'; uri: string; headers?: Record<string, string> }
   /** two demo frames cycled in-app so the demo is always animated */

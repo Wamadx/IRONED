@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Btn, Card, Dim, Title, TrashConfirm } from '@/components/ui';
 import { getExercise, resolveExerciseId } from '@/lib/exercises';
 import { useApp } from '@/lib/store';
-import { C, F } from '@/lib/theme';
+import { C, F, S } from '@/lib/theme';
 
 export default function Plans() {
   const router = useRouter();
@@ -21,7 +21,7 @@ export default function Plans() {
       contentContainerStyle={{
         padding: 16,
         paddingTop: insets.top + 16,
-        paddingBottom: 32 + insets.bottom,
+        paddingBottom: 32 + insets.bottom + (S.freeform ? 84 : 0),
       }}>
       <Title>PLANS</Title>
       <Dim>Tap a plan to edit it. Tap the trash twice to delete.</Dim>

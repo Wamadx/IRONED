@@ -9,7 +9,7 @@ import { RankPet } from '@/components/pet';
 import { getExercise } from '@/lib/exercises';
 import { slotForDate } from '@/lib/schedule';
 import { doneSets, useApp, workoutVolume } from '@/lib/store';
-import { C, F } from '@/lib/theme';
+import { C, F, S } from '@/lib/theme';
 import {
   achievements,
   currentStreak,
@@ -200,7 +200,7 @@ export default function Hunter() {
       contentContainerStyle={{
         padding: 16,
         paddingTop: insets.top + 16,
-        paddingBottom: 32 + insets.bottom,
+        paddingBottom: 32 + insets.bottom + (S.freeform ? 84 : 0),
       }}>
       <Title>HUNTER STATUS</Title>
 

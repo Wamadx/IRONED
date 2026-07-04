@@ -1,11 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
 import { ReactNode, useEffect, useState } from 'react';
 import { ActivityIndicator, Linking, Pressable, Text, View } from 'react-native';
 
 import type { MobilityMove } from '@/lib/exercises';
 import { getCachedGif } from '@/lib/gif-cache';
-import type { GifSource } from '@/lib/gifs';
+import { demoNeedsKey, type GifSource } from '@/lib/gifs';
 import { C, F } from '@/lib/theme';
 
 /** Cycles two demo frames so free-exercise-db demos render animated, not static. */
@@ -79,10 +80,27 @@ export function GifPanel({
     };
   }, [name]);
 
+  const router = useRouter();
+  const keyMissing = source === null && demoNeedsKey(name);
   return (
     <View style={{ marginTop: 6 }}>
       {source === 'loading' && <ActivityIndicator color={C.red} style={{ marginVertical: 16 }} />}
-      {source === null && (
+      {keyMissing && (
+        <View>
+          <Text style={{ color: C.textDim, fontSize: F.small }}>
+            Animated demos need a free ExerciseDB key — add yours once and every demo unlocks
+            (step-by-step guide included).
+          </Text>
+          <View style={{ marginTop: 8 }}>
+            <ActionChip
+              icon="key"
+              label="Add API key in Settings"
+              onPress={() => router.push('/settings')}
+            />
+          </View>
+        </View>
+      )}
+      {source === null && !keyMissing && (
         <Text style={{ color: C.textFaint, fontSize: F.small, fontStyle: 'italic' }}>
           No demo available for this move.
         </Text>

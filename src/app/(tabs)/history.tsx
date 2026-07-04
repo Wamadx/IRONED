@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Card, Dim, Title, TrashConfirm } from '@/components/ui';
 import { doneSets, useApp, workoutVolume } from '@/lib/store';
-import { C, F } from '@/lib/theme';
+import { C, F, S } from '@/lib/theme';
 import type { Workout } from '@/lib/types';
 
 const DAY = 24 * 3600 * 1000;
@@ -110,7 +110,7 @@ export default function History() {
       contentContainerStyle={{
         padding: 16,
         paddingTop: insets.top + 16,
-        paddingBottom: 32 + insets.bottom,
+        paddingBottom: 32 + insets.bottom + (S.freeform ? 84 : 0),
       }}>
       <Title>HISTORY</Title>
       <Dim>

@@ -325,9 +325,18 @@ export default function MealAdd() {
         />
       ) : (
         <Card style={{ marginTop: 12, borderColor: C.redDark }}>
+          <H2>Enable AI photo analysis</H2>
           <Dim small>
-            AI analysis needs a Gemini API key in src/lib/config.ts. Manual entry below still works.
+            Snapping a photo and getting the macro breakdown automatically needs a free Gemini API
+            key. Add yours in Settings — there’s a step-by-step guide on how to get one. Manual
+            entry below works without it.
           </Dim>
+          <Btn
+            label="Add Gemini key in Settings"
+            icon="key-outline"
+            style={{ marginTop: 10 }}
+            onPress={() => router.push('/settings')}
+          />
         </Card>
       )}
       {analyzing && <ActivityIndicator color={C.red} style={{ marginTop: 12 }} />}
