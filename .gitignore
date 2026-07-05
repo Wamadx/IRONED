@@ -45,8 +45,8 @@ DEV-GUIDE-OTHER-PC.txt
 /ios
 /android
 
-# API keys live here — copy src/lib/config.example.ts to config.ts and fill in
-src/lib/config.ts
+# API keys live here — commit a safe (empty) config.ts; override locally for dev only
+# src/lib/config.ts
 
 # local build verification output
 dist-check/
