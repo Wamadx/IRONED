@@ -36,7 +36,10 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
-example
+# Developer guides and documentation for developers only
+dev-guides/
+dev-insights/
+DEV-GUIDE-OTHER-PC.txt
 
 # generated native folders
 /ios
@@ -47,3 +50,5 @@ src/lib/config.ts
 
 # local build verification output
 dist-check/
+# Used for local testing of APKs during development
+.apk-check/
