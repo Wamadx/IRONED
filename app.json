@@ -2,9 +2,9 @@
   "expo": {
     "name": "IRONED",
     "slug": "ironed",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
-    "icon": "./assets/images/Minecraft-Iron-Ore.jpg",
+    "icon": "./assets/images/icon.png",
     "scheme": "ironed",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#0B0909",
