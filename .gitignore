@@ -42,6 +42,10 @@ dev-insights/
 DEV-GUIDE-OTHER-PC.txt
 FEATURES.md
 
+# AI agent config files — local only
+AGENTS.md
+CLAUDE.md
+
 # generated native folders
 /ios
 /android
