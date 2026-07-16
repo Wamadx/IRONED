@@ -20,7 +20,10 @@ export type Equipment =
   | 'cable'
   | 'kettlebell'
   | 'pull-up bar'
-  | 'cardio';
+  | 'cardio'
+  | 'bench'
+  | 'band'
+  | 'medicine ball';
 
 export interface Exercise {
   id: string;
@@ -68,6 +71,8 @@ export interface WorkoutExercise {
   restSeconds: number;
   /** set when the user switched to a machine variant mid-workout — holds the original id */
   swappedFrom?: string;
+  /** holds the original starting exercise ID before regression/easy variants were applied */
+  initialExerciseId?: string;
   /** superset-linked to the following exercise (rest starts after the partner) */
   supersetWithNext?: boolean;
   sets: SetLog[];
@@ -105,6 +110,9 @@ export interface MealItem {
   protein: number;
   carbs: number;
   fat: number;
+  sodium?: number;
+  source?: string;
+  sourceUrl?: string;
 }
 
 export interface Meal {

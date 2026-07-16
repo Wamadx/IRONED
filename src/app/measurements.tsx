@@ -47,7 +47,12 @@ export default function Measurements() {
     measurements.filter((m) => m.metric === metric).sort((a, b) => b.time - a.time);
 
   const addPhoto = async (camera: boolean) => {
-    const opts: ImagePicker.ImagePickerOptions = { mediaTypes: 'images', quality: 0.6 };
+    const opts: ImagePicker.ImagePickerOptions = {
+      mediaTypes: 'images',
+      quality: 0.6,
+      allowsEditing: true,
+      aspect: [3, 4],
+    };
     let result: ImagePicker.ImagePickerResult;
     if (camera) {
       const perm = await ImagePicker.requestCameraPermissionsAsync();

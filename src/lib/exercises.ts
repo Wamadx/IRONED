@@ -13,6 +13,8 @@ export const EXERCISES: Exercise[] = [
   { id: 'decline-push-up', name: 'Decline Push-Up', muscles: ['chest', 'shoulders'], equipment: 'bodyweight', home: true },
   { id: 'diamond-push-up', name: 'Diamond Push-Up', muscles: ['triceps', 'chest'], equipment: 'bodyweight', home: true },
   { id: 'archer-push-up', name: 'Archer Push-Up', muscles: ['chest', 'triceps'], equipment: 'bodyweight', home: true },
+  { id: 'knee-push-up', name: 'Knee Push-Up', muscles: ['chest', 'triceps'], equipment: 'bodyweight', home: true },
+  { id: 'wall-push-up', name: 'Wall Push-Up', muscles: ['chest', 'triceps'], equipment: 'bodyweight', home: true },
   { id: 'chest-dip', name: 'Chest Dip', muscles: ['chest', 'triceps'], equipment: 'bodyweight', home: false },
   { id: 'chair-dip', name: 'Chair Dip', muscles: ['triceps', 'chest'], equipment: 'bodyweight', home: true },
 
@@ -24,6 +26,7 @@ export const EXERCISES: Exercise[] = [
   { id: 'seated-cable-row', name: 'Seated Cable Row', muscles: ['back'], equipment: 'cable', home: false },
   { id: 'pull-up', name: 'Pull-Up', muscles: ['back', 'biceps'], equipment: 'pull-up bar', home: true },
   { id: 'chin-up', name: 'Chin-Up', muscles: ['back', 'biceps'], equipment: 'pull-up bar', home: true },
+  { id: 'assisted-pull-up', name: 'Assisted Pull-Up (band/foot)', muscles: ['back', 'biceps'], equipment: 'pull-up bar', home: true },
   { id: 'inverted-row', name: 'Inverted Row (table/bar)', muscles: ['back', 'biceps'], equipment: 'bodyweight', home: true },
   { id: 'face-pull', name: 'Face Pull', muscles: ['shoulders', 'back'], equipment: 'cable', home: false },
   { id: 'back-extension', name: 'Back Extension', muscles: ['back', 'glutes'], equipment: 'bodyweight', home: false },
@@ -36,6 +39,7 @@ export const EXERCISES: Exercise[] = [
   { id: 'lateral-raise', name: 'Lateral Raise', muscles: ['shoulders'], equipment: 'dumbbell', home: true },
   { id: 'rear-delt-fly', name: 'Rear Delt Fly', muscles: ['shoulders'], equipment: 'dumbbell', home: true },
   { id: 'pike-push-up', name: 'Pike Push-Up', muscles: ['shoulders', 'triceps'], equipment: 'bodyweight', home: true },
+  { id: 'elevated-pike-push-up', name: 'Elevated Pike Push-Up', muscles: ['shoulders', 'triceps'], equipment: 'bodyweight', home: true },
   { id: 'handstand-push-up', name: 'Handstand Push-Up (wall)', muscles: ['shoulders', 'triceps'], equipment: 'bodyweight', home: true },
 
   // ── Arms ───────────────────────────────────────────────
@@ -62,7 +66,9 @@ export const EXERCISES: Exercise[] = [
   { id: 'step-up', name: 'Step-Up', muscles: ['quads', 'glutes'], equipment: 'dumbbell', home: true },
   { id: 'hip-thrust', name: 'Hip Thrust', muscles: ['glutes'], equipment: 'barbell', home: false },
   { id: 'glute-bridge', name: 'Glute Bridge', muscles: ['glutes'], equipment: 'bodyweight', home: true },
+  { id: 'single-leg-glute-bridge', name: 'Single-Leg Glute Bridge', muscles: ['glutes'], equipment: 'bodyweight', home: true },
   { id: 'jump-squat', name: 'Jump Squat', muscles: ['quads', 'glutes'], equipment: 'bodyweight', home: true },
+  { id: 'box-squat', name: 'Box Squat (to chair)', muscles: ['quads', 'glutes'], equipment: 'bodyweight', home: true },
   { id: 'wall-sit', name: 'Wall Sit', muscles: ['quads'], equipment: 'bodyweight', home: true },
   { id: 'standing-calf-raise', name: 'Standing Calf Raise', muscles: ['calves'], equipment: 'machine', home: false },
   { id: 'bw-calf-raise', name: 'Calf Raise (bodyweight/DB)', muscles: ['calves'], equipment: 'bodyweight', home: true },
@@ -70,8 +76,11 @@ export const EXERCISES: Exercise[] = [
 
   // ── Core ───────────────────────────────────────────────
   { id: 'plank', name: 'Plank (secs as reps)', muscles: ['core'], equipment: 'bodyweight', home: true },
+  { id: 'knee-plank', name: 'Knee Plank (secs as reps)', muscles: ['core'], equipment: 'bodyweight', home: true },
   { id: 'hollow-hold', name: 'Hollow Hold (secs as reps)', muscles: ['core'], equipment: 'bodyweight', home: true },
+  { id: 'dead-bug', name: 'Dead Bug', muscles: ['core'], equipment: 'bodyweight', home: true },
   { id: 'hanging-leg-raise', name: 'Hanging Leg Raise', muscles: ['core'], equipment: 'pull-up bar', home: true },
+  { id: 'hanging-knee-raise', name: 'Hanging Knee Raise', muscles: ['core'], equipment: 'pull-up bar', home: true },
   { id: 'cable-crunch', name: 'Cable Crunch', muscles: ['core'], equipment: 'cable', home: false },
   { id: 'bicycle-crunch', name: 'Bicycle Crunch', muscles: ['core'], equipment: 'bodyweight', home: true },
   { id: 'russian-twist', name: 'Russian Twist', muscles: ['core'], equipment: 'bodyweight', home: true },
@@ -150,6 +159,101 @@ export const HOME_SWAP: Record<string, string> = {
   'kettlebell-swing': 'jump-squat',
   'rowing-machine': 'jump-rope',
   'stair-climber': 'jump-rope',
+};
+
+/**
+ * Easy regression: exercise -> next-easier alternative, forming a step-down chain.
+ * Used by the "Easy Variation" button in active workout.
+ * Each chain goes: hardest → ... → easiest
+ */
+export const EASY_VARIATION: Record<string, string> = {
+  // ── Chest / Push progressions ──
+  'push-up': 'knee-push-up',
+  'knee-push-up': 'wall-push-up',
+  'incline-push-up': 'knee-push-up',
+  'decline-push-up': 'push-up',
+  'diamond-push-up': 'push-up',
+  'archer-push-up': 'push-up',
+  'bench-press': 'db-bench-press',
+  'db-bench-press': 'push-up',
+  'incline-bench-press': 'incline-push-up',
+  'incline-db-press': 'incline-push-up',
+  'db-floor-press': 'push-up',
+  'chest-dip': 'chair-dip',
+  'cable-fly': 'push-up',
+
+  // ── Shoulders ──
+  'handstand-push-up': 'elevated-pike-push-up',
+  'elevated-pike-push-up': 'pike-push-up',
+  'pike-push-up': 'db-shoulder-press',
+  'overhead-press': 'db-shoulder-press',
+  'db-shoulder-press': 'pike-push-up',
+  'lateral-raise': 'rear-delt-fly',
+
+  // ── Back / Pull progressions ──
+  'pull-up': 'assisted-pull-up',
+  'chin-up': 'assisted-pull-up',
+  'assisted-pull-up': 'inverted-row',
+  'inverted-row': 'db-row',
+  'deadlift': 'db-rdl',
+  'barbell-row': 'db-row',
+  'db-row': 'inverted-row',
+  'lat-pulldown': 'db-row',
+  'seated-cable-row': 'db-row',
+  'back-extension': 'glute-bridge',
+  'face-pull': 'rear-delt-fly',
+
+  // ── Arms ──
+  'barbell-curl': 'db-curl',
+  'db-curl': 'hammer-curl',
+  'hammer-curl': 'db-curl',
+  'cable-pushdown': 'overhead-triceps-ext',
+  'skullcrusher': 'overhead-triceps-ext',
+  'overhead-triceps-ext': 'diamond-push-up',
+  'close-grip-bench': 'diamond-push-up',
+
+  // ── Legs ──
+  'barbell-squat': 'goblet-squat',
+  'front-squat': 'goblet-squat',
+  'goblet-squat': 'box-squat',
+  'box-squat': 'wall-sit',
+  'leg-press': 'goblet-squat',
+  'leg-extension': 'step-up',
+  'leg-curl': 'glute-bridge',
+  'romanian-deadlift': 'db-rdl',
+  'db-rdl': 'single-leg-rdl',
+  'single-leg-rdl': 'glute-bridge',
+  'bulgarian-split-squat': 'walking-lunge',
+  'walking-lunge': 'step-up',
+  'step-up': 'glute-bridge',
+  'hip-thrust': 'glute-bridge',
+  'glute-bridge': 'single-leg-glute-bridge',
+  'jump-squat': 'goblet-squat',
+  'wall-sit': 'box-squat',
+
+  // ── Core ──
+  'hanging-leg-raise': 'hanging-knee-raise',
+  'hanging-knee-raise': 'bicycle-crunch',
+  'ab-wheel': 'plank',
+  'plank': 'knee-plank',
+  'hollow-hold': 'dead-bug',
+  'cable-crunch': 'bicycle-crunch',
+  'bicycle-crunch': 'mountain-climber',
+  'russian-twist': 'bicycle-crunch',
+  'mountain-climber': 'knee-plank',
+
+  // ── Full body ──
+  'burpee': 'jump-squat',
+  'kettlebell-swing': 'glute-bridge',
+
+  // ── Machines → free weight ──
+  'machine-chest-press': 'push-up',
+  'machine-shoulder-press': 'db-shoulder-press',
+  'machine-seated-row': 'db-row',
+  'machine-preacher-curl': 'db-curl',
+  'machine-seated-dip': 'chair-dip',
+  'machine-seated-crunch': 'bicycle-crunch',
+  'hack-squat-machine': 'goblet-squat',
 };
 
 export interface MobilityMove {

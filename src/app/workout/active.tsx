@@ -6,8 +6,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { LevelUpOverlay } from '@/components/level-up';
 import { ActionChip, DemoChip, GifPanel, MoveRow } from '@/components/move-row';
-import { Btn, Card, ConfirmBtn, Dim, H2, NumInput } from '@/components/ui';
-import { cooldownFor, getExercise, getMistakes, MACHINE_SWAP, warmupFor } from '@/lib/exercises';
+import { Btn, Card, ConfirmBtn, Dim, H2, NumInput, TrashConfirm } from '@/components/ui';
+import { cooldownFor, EASY_VARIATION, getExercise, getMistakes, MACHINE_SWAP, warmupFor } from '@/lib/exercises';
 import { lastPerformance, useApp } from '@/lib/store';
 import { C, F } from '@/lib/theme';
 import type { MuscleGroup } from '@/lib/types';
@@ -49,6 +49,7 @@ export default function ActiveWorkout() {
   const removeActiveExercise = useApp((s) => s.removeActiveExercise);
   const toggleMachineVariant = useApp((s) => s.toggleMachineVariant);
   const cycleVariant = useApp((s) => s.cycleVariant);
+  const easyVariant = useApp((s) => s.easyVariant);
   const pauseWorkout = useApp((s) => s.pauseWorkout);
   const resumeWorkout = useApp((s) => s.resumeWorkout);
   const finishWorkout = useApp((s) => s.finishWorkout);
@@ -232,12 +233,10 @@ export default function ActiveWorkout() {
                     open={demoOpen}
                     onPress={() => setOpenDemos((cur) => ({ ...cur, [i]: !cur[i] }))}
                   />
-                  <Pressable
-                    onPress={() => removeActiveExercise(i)}
-                    hitSlop={10}
-                    style={{ marginLeft: 10, padding: 4 }}>
-                    <Ionicons name="close" size={20} color={C.textFaint} />
-                  </Pressable>
+                  <TrashConfirm
+                    onDelete={() => removeActiveExercise(i)}
+                    size={20}
+                  />
                 </View>
 
                 {!isCollapsed && (
@@ -247,11 +246,25 @@ export default function ActiveWorkout() {
                     name={ex.name}
                     mistakes={getMistakes(ex.id)}
                     action={
-                      <ActionChip
-                        icon="shuffle"
-                        label={ex.cardio ? 'Try another cardio' : `Next ${ex.muscles[0]} variation`}
-                        onPress={() => cycleVariant(i)}
-                      />
+                      <>
+                        <ActionChip
+                          icon="shuffle"
+                          label={ex.cardio ? 'Try another cardio' : `Next ${ex.muscles[0]} variation`}
+                          onPress={() => cycleVariant(i)}
+                        />
+                        {!ex.cardio && (() => {
+                          const nextEasyId = EASY_VARIATION[we.exerciseId] ?? we.initialExerciseId;
+                          if (!nextEasyId) return null;
+                          const isRoot = we.exerciseId === we.initialExerciseId;
+                          return (
+                            <ActionChip
+                              icon={isRoot ? "trending-up" : "trending-down"}
+                              label={`${isRoot ? 'Hard' : 'Easy'}: ${getExercise(nextEasyId).name}`}
+                              onPress={() => easyVariant(i)}
+                            />
+                          );
+                        })()}
+                      </>
                     }
                   />
                 )}

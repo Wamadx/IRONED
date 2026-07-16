@@ -32,15 +32,22 @@ async function resolve(name: string): Promise<GifSource | null> {
   if (!src) return null;
   if (Platform.OS === 'web') return src;
 
-  const safe = name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   if (src.kind === 'frames') {
     const local = await Promise.all(
-      src.frames.map((url, i) => download(url, `${DIR}${safe}-f${i}.jpg`))
+      src.frames.map((url, i) => {
+        // extract folder name from url to make filename content-specific
+        const parts = url.split('/');
+        const folder = parts[parts.length - 2] || 'unknown';
+        return download(url, `${DIR}${folder}-f${i}.jpg`);
+      })
     );
     // fall back to remote URLs for any frame that failed
     return { kind: 'frames', frames: local.map((p, i) => p ?? src.frames[i]) };
   }
-  const path = await download(src.uri, `${DIR}${safe}.gif`, src.headers);
+  
+  const match = src.uri.match(/[?&]exerciseId=([^&]+)/);
+  const id = match ? match[1] : name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const path = await download(src.uri, `${DIR}db-${id}.gif`, src.headers);
   return path ? { kind: 'gif', uri: path } : src;
 }
 

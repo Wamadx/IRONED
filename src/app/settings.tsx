@@ -1,8 +1,9 @@
 import * as FileSystem from 'expo-file-system/legacy';
 import { Image } from 'expo-image';
-import { useState } from 'react';
-import { Linking, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { LayoutChangeEvent, Linking, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLocalSearchParams } from 'expo-router';
 
 import { Btn, Card, ConfirmBtn, Dim, H2, NumInput } from '@/components/ui';
 import { checkForUpdate } from '@/lib/app-updates';
@@ -54,6 +55,19 @@ function KeyGuide({ title, steps, url, showDemo: _showDemo = false }: { title: s
 
 export default function Settings() {
   const insets = useSafeAreaInsets();
+  const { focus } = useLocalSearchParams<{ focus?: string }>();
+  const scrollRef = useRef<ScrollView>(null);
+  const [apiKeyY, setApiKeyY] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (focus === 'api' && apiKeyY !== null) {
+      const t = setTimeout(() => {
+        scrollRef.current?.scrollTo({ y: apiKeyY - 20, animated: true });
+      }, 100);
+      return () => clearTimeout(t);
+    }
+  }, [focus, apiKeyY]);
+
   const unit = useApp((s) => s.unit);
   const setUnit = useApp((s) => s.setUnit);
   const barWeight = useApp((s) => s.barWeight);
@@ -122,6 +136,7 @@ export default function Settings() {
 
   return (
     <ScrollView
+      ref={scrollRef}
       style={{ flex: 1, backgroundColor: C.bg }}
       contentContainerStyle={{ padding: 16, paddingBottom: 32 + insets.bottom }}
       keyboardShouldPersistTaps="handled">
@@ -443,8 +458,9 @@ export default function Settings() {
         {reminderMsg !== '' && <Dim small>{reminderMsg}</Dim>}
       </Card>
 
-      <Card>
-        <H2>API keys</H2>
+      <View onLayout={(e: LayoutChangeEvent) => setApiKeyY(e.nativeEvent.layout.y)}>
+        <Card>
+          <H2>API keys</H2>
         <Dim small>
           Optional — the app ships with the developer’s keys for now. Paste your own to use your
           quotas instead (needed if you got this app from someone else).
@@ -512,6 +528,7 @@ export default function Settings() {
           }}
         />
       </Card>
+    </View>
 
       <Card>
         <H2>Data</H2>

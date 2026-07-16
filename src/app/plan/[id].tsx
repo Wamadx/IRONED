@@ -1,6 +1,6 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Sortable from 'react-native-sortables';
 
@@ -193,10 +193,54 @@ export default function PlanEditor() {
   return (
     <>
       <Stack.Screen options={{ title: plan.name }} />
-      <ScrollView
-        style={{ flex: 1, backgroundColor: C.bg }}
-        contentContainerStyle={{ padding: 16, paddingBottom: 48 + insets.bottom }}
-        keyboardShouldPersistTaps="handled">
+      {/* ── editing-mode frame ── */}
+      <View style={{ flex: 1, backgroundColor: C.bg }}>
+        {/* red tint wash */}
+        <View
+          style={{
+            ...StyleSheet.absoluteFill,
+            backgroundColor: 'rgba(180,20,20,0.07)',
+            pointerEvents: 'none',
+          }}
+        />
+        {/* dashed border inset from edges */}
+        <View
+          style={{
+            position: 'absolute',
+            top: 10,
+            left: 10,
+            right: 10,
+            bottom: 10,
+            borderWidth: 1.5,
+            borderColor: 'rgba(220,50,50,0.55)',
+            borderStyle: 'dashed',
+            borderRadius: 16,
+            pointerEvents: 'none',
+          }}
+        />
+        {/* EDIT MODE badge */}
+        <View
+          style={{
+            position: 'absolute',
+            top: 4,
+            right: 20,
+            backgroundColor: 'rgba(180,20,20,0.82)',
+            borderRadius: 6,
+            paddingVertical: 2,
+            paddingHorizontal: 8,
+            pointerEvents: 'none',
+            zIndex: 10,
+          }}
+        >
+          <Text style={{ color: '#fff', fontSize: F.small - 1, fontWeight: '800', letterSpacing: 1 }}>
+            EDIT MODE
+          </Text>
+        </View>
+
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ padding: 16, paddingBottom: 48 + insets.bottom }}
+          keyboardShouldPersistTaps="handled">
         <Dim small>PLAN NAME</Dim>
         <TextInput
           defaultValue={plan.name}
@@ -264,7 +308,8 @@ export default function PlanEditor() {
             router.back();
           }}
         />
-      </ScrollView>
+        </ScrollView>
+      </View>
     </>
   );
 }

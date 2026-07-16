@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Linking,
   Modal,
   Platform,
   Pressable,
@@ -42,6 +43,7 @@ export default function MealAdd() {
   const insets = useSafeAreaInsets();
   const addMeal = useApp((s) => s.addMeal);
   const meals = useApp((s) => s.meals);
+  const geminiKey = useApp((s) => s.apiKeys.gemini);
 
   // starred favourites + most recent distinct meals, for one-tap re-logging
   const distinct = meals.filter((m, i, arr) => arr.findIndex((x) => x.desc === m.desc) === i);
@@ -68,6 +70,7 @@ export default function MealAdd() {
   const [analysis, setAnalysis] = useState<FoodAnalysis | null>(null);
   const [analysisRun, setAnalysisRun] = useState(0);
   const [failed, setFailed] = useState(false);
+  const [aiFailed, setAiFailed] = useState(false);
 
   const [desc, setDesc] = useState('');
   const [kcal, setKcal] = useState(0);
@@ -108,6 +111,8 @@ export default function MealAdd() {
     scannedOnce.current = true;
     setScanOpen(false);
     setScanning(true);
+    setFailed(false);
+    setAiFailed(false);
     const p = await lookupBarcode(code);
     setScanning(false);
     if (p) {
@@ -124,6 +129,8 @@ export default function MealAdd() {
       mediaTypes: 'images',
       quality: 0.5,
       base64: true,
+      allowsEditing: true,
+      aspect: [4, 3],
     };
     let result: ImagePicker.ImagePickerResult;
     if (camera) {
@@ -138,12 +145,14 @@ export default function MealAdd() {
       setPhotos((cur) => [...cur, { uri: asset.uri, base64: asset.base64 ?? null }].slice(0, 4));
       setAnalysis(null);
       setFailed(false);
+      setAiFailed(false);
     }
   };
 
   const runAnalysis = async () => {
     setAnalyzing(true);
     setFailed(false);
+    setAiFailed(false);
     const res = await analyzeFood(
       photos.map((p) => p.base64).filter((b): b is string => !!b),
       notes
@@ -159,7 +168,7 @@ export default function MealAdd() {
       setFat(res.fat);
       setSodium(res.sodium);
     } else {
-      setFailed(true);
+      setAiFailed(true);
     }
   };
 
@@ -316,7 +325,7 @@ export default function MealAdd() {
         }}
       />
 
-      {geminiConfigured() ? (
+      {geminiKey.length > 0 || geminiConfigured() ? (
         <Btn
           label={analyzing ? 'Analyzing…' : 'Analyze with AI'}
           icon="sparkles"
@@ -334,17 +343,21 @@ export default function MealAdd() {
           <Btn
             label="Add Gemini key in Settings"
             icon="key-outline"
-            style={{ marginTop: 10 }}
-            onPress={() => router.push('/settings')}
+            style={{ marginTop: 10, backgroundColor: C.ember }}
+            onPress={() => router.push('/settings?focus=api')}
           />
         </Card>
       )}
       {analyzing && <ActivityIndicator color={C.red} style={{ marginTop: 12 }} />}
       {failed && (
-        <Dim small>
-          {'\n'}Lookup failed — barcode not in the database or no connection. Fill the numbers in
-          manually below.
-        </Dim>
+        <Text style={{ color: C.red, fontSize: F.small, marginTop: 12 }}>
+          Barcode lookup failed — not in database or no connection. Fill in manually below.
+        </Text>
+      )}
+      {aiFailed && (
+        <Text style={{ color: C.red, fontSize: F.small, marginTop: 12 }}>
+          AI analysis failed — verify your Gemini key in Settings or check connection. Fill in manually below.
+        </Text>
       )}
 
       <Modal visible={scanOpen} animationType="slide" onRequestClose={() => setScanOpen(false)}>
@@ -380,12 +393,30 @@ export default function MealAdd() {
       {analysis && (
         <Card style={{ marginTop: 12, borderColor: C.ember }}>
           <H2>AI breakdown</H2>
-          {analysis.items.map((it, i) => (
-            <Dim key={`${it.name}-${i}`} small>
-              • {it.name} (~{it.grams}g): {it.kcal} kcal, P {it.protein}g, C {it.carbs}g, F {it.fat}g
-            </Dim>
-          ))}
-          <Dim small>Numbers below are pre-filled — adjust anything before saving.</Dim>
+          {analysis.items.map((it, i) => {
+            const hasUrl = it.sourceUrl && (it.sourceUrl.startsWith('http://') || it.sourceUrl.startsWith('https://'));
+            return (
+              <View key={`${it.name}-${i}`} style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', marginVertical: 2 }}>
+                <Text style={{ color: C.textDim, fontSize: F.small }}>
+                  • {it.name} (~{it.grams}g): {it.kcal} kcal, P {it.protein}g, C {it.carbs}g, F {it.fat}g ·{' '}
+                </Text>
+                {it.source ? (
+                  <Text style={{ color: C.textFaint, fontSize: F.small }}>
+                    {it.source}
+                    {hasUrl ? ': ' : ''}
+                  </Text>
+                ) : null}
+                {hasUrl && (
+                  <Text
+                    style={{ color: C.red, fontSize: F.small, textDecorationLine: 'underline', fontWeight: '600' }}
+                    onPress={() => Linking.openURL(it.sourceUrl!)}>
+                    Source Link
+                  </Text>
+                )}
+              </View>
+            );
+          })}
+          <Text style={{ color: C.textFaint, fontSize: F.small, marginTop: 8 }}>Numbers below are pre-filled — adjust anything before saving.</Text>
         </Card>
       )}
 

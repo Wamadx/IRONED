@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import { EXERCISES, getExercise, MACHINE_SWAP, resolveExerciseId } from './exercises';
+import { EASY_VARIATION, EXERCISES, getExercise, MACHINE_SWAP, resolveExerciseId } from './exercises';
 import { generatePlans, uid } from './physique';
 import type { AccentId, BgId, FontScaleId, UiFlavor } from './theme';
 import type {
@@ -41,6 +41,8 @@ interface AppState {
   barWeight: number;
   /** user-provided API keys (override the baked-in dev keys) */
   apiKeys: { exercisedb: string; gemini: string };
+  /** equipment the user has at home for filtering */
+  homeEquipment: { barbell: boolean; dumbbell: boolean; "pull-up bar": boolean; bench: boolean; band: boolean; "medicine ball": boolean };
   /** weekly split: index = JS getDay() (0=Sun) → planId | 'rest' | null */
   schedule: (string | null)[];
   /** rotating cycle mode (e.g. 5-day UA/LA/UB/LB/Rest repeating regardless of weekday) */
@@ -104,6 +106,7 @@ interface AppState {
   setScheduleMode: (mode: 'weekly' | 'cycle') => void;
   setCycle: (cycle: string[]) => void;
   restartCycleToday: () => void;
+  setHomeEquipment: (equipment: keyof AppState['homeEquipment'], value: boolean) => void;
   setReminders: (enabled: boolean, hour: number) => void;
   setAccent: (accent: AccentId) => void;
   setBgTheme: (bgTheme: BgId) => void;
@@ -119,6 +122,8 @@ interface AppState {
   deleteProgressPhoto: (id: string) => void;
   /** swap an active exercise for the next variation hitting the same primary muscle */
   cycleVariant: (index: number) => void;
+  /** swap an active exercise for an easier regression (e.g. push-up → knee push-up) */
+  easyVariant: (index: number) => void;
   /** dev helper: inject fake workouts into history for testing */
   seedDemoData: () => void;
 
@@ -150,6 +155,7 @@ export const useApp = create<AppState>()(
       unit: 'kg',
       barWeight: 20,
       apiKeys: { exercisedb: '', gemini: '' },
+      homeEquipment: { barbell: false, dumbbell: false, 'pull-up bar': false },
       schedule: [null, null, null, null, null, null, null],
       scheduleMode: 'weekly',
       cycle: [],
@@ -272,7 +278,7 @@ export const useApp = create<AppState>()(
         })),
 
       startWorkout: (planId) => {
-        const { plans, profile } = get();
+        const { plans, profile, workouts } = get();
         const plan = planId ? plans.find((p) => p.id === planId) : undefined;
         const exercises: WorkoutExercise[] = (plan?.exercises ?? []).map((e) => {
           const exerciseId = resolveExerciseId(e.exerciseId, profile.location);
@@ -280,15 +286,18 @@ export const useApp = create<AppState>()(
           const eq = getExercise(exerciseId).equipment;
           // a swapped-in bodyweight move shouldn't inherit the barbell's kg
           const zeroWeight = swapped && (eq === 'bodyweight' || eq === 'pull-up bar');
+
+          // prefer last session's actual performance over the plan's static defaults
+          const prev = lastPerformance(workouts, exerciseId);
+          const baseSets = prev
+            ? prev.map((s) => ({ reps: s.reps, weight: zeroWeight ? 0 : s.weight, done: false }))
+            : e.sets.map((st) => ({ ...st, weight: zeroWeight ? 0 : st.weight, done: false }));
+
           return {
             exerciseId,
             restSeconds: e.restSeconds,
             supersetWithNext: e.supersetWithNext,
-            sets: e.sets.map((st) => ({
-              ...st,
-              weight: zeroWeight ? 0 : st.weight,
-              done: false,
-            })),
+            sets: baseSets,
           };
         });
         set({
@@ -331,15 +340,19 @@ export const useApp = create<AppState>()(
                   ...s.active,
                   exercises: [
                     ...s.active.exercises,
-                    ...exerciseIds.map((exerciseId) => ({
-                      exerciseId,
-                      restSeconds: 90,
-                      sets: [
-                        { reps: 10, weight: 0, done: false },
-                        { reps: 10, weight: 0, done: false },
-                        { reps: 10, weight: 0, done: false },
-                      ],
-                    })),
+                    ...exerciseIds.map((exerciseId) => {
+                      const prev = lastPerformance(s.workouts, exerciseId);
+                      const eq = getExercise(exerciseId).equipment;
+                      const zero = eq === 'bodyweight' || eq === 'pull-up bar';
+                      const sets = prev
+                        ? prev.map((st) => ({ reps: st.reps, weight: zero ? 0 : st.weight, done: false }))
+                        : [
+                            { reps: 10, weight: 0, done: false },
+                            { reps: 10, weight: 0, done: false },
+                            { reps: 10, weight: 0, done: false },
+                          ];
+                      return { exerciseId, restSeconds: 90, sets };
+                    }),
                   ],
                 },
               }
@@ -354,24 +367,39 @@ export const useApp = create<AppState>()(
         ),
 
       toggleMachineVariant: (index) =>
-        set((s) =>
-          s.active
-            ? {
-                active: {
-                  ...s.active,
-                  exercises: s.active.exercises.map((e, i) => {
-                    if (i !== index) return e;
-                    if (e.swappedFrom) {
-                      // switch back to the original free-weight variant
-                      return { ...e, exerciseId: e.swappedFrom, swappedFrom: undefined };
-                    }
-                    const alt = MACHINE_SWAP[e.exerciseId];
-                    return alt ? { ...e, exerciseId: alt, swappedFrom: e.exerciseId } : e;
-                  }),
-                },
-              }
-            : s
-        ),
+        set((s) => {
+          if (!s.active) return s;
+          return {
+            active: {
+              ...s.active,
+              exercises: s.active.exercises.map((e, i) => {
+                if (i !== index) return e;
+                const nextId = e.swappedFrom || MACHINE_SWAP[e.exerciseId];
+                if (!nextId) return e;
+                const eq = getExercise(nextId).equipment;
+                const zero = eq === 'bodyweight' || eq === 'pull-up bar';
+
+                // Look up PR
+                const prev = lastPerformance(s.workouts, nextId);
+                const sets = prev
+                  ? prev.map((st) => ({ reps: st.reps, weight: zero ? 0 : st.weight, done: false }))
+                  : Array.from({ length: e.sets.length }, () => ({
+                      reps: 10,
+                      weight: zero ? 0 : (eq === 'barbell' ? 20 : (eq === 'dumbbell' ? 10 : 0)),
+                      done: false,
+                    }));
+
+                return {
+                  ...e,
+                  exerciseId: nextId,
+                  swappedFrom: e.swappedFrom ? undefined : e.exerciseId,
+                  initialExerciseId: undefined,
+                  sets,
+                };
+              }),
+            },
+          };
+        }),
 
       addActiveSet: (index) =>
         set((s) =>
@@ -448,7 +476,32 @@ export const useApp = create<AppState>()(
           location: a.location,
           exercises: a.exercises,
         };
-        set((s) => ({ workouts: [workout, ...s.workouts], active: null }));
+        set((s) => {
+          // sync completed set values back into the source plan so next session
+          // pre-fills with what was actually lifted
+          let updatedPlans = s.plans;
+          if (a.planId) {
+            updatedPlans = mutPlan(s.plans, a.planId, (plan) => ({
+              ...plan,
+              exercises: plan.exercises.map((pe) => {
+                // find the matching active exercise (by exerciseId)
+                const done = a.exercises.find(
+                  (we) => we.exerciseId === pe.exerciseId && we.sets.some((st) => st.done)
+                );
+                if (!done) return pe; // not performed — keep plan as-is
+                const doneSets = done.sets.filter((st) => st.done);
+                return {
+                  ...pe,
+                  sets: doneSets.map((st) => ({
+                    reps: st.reps,
+                    weight: st.weight,
+                  })),
+                };
+              }),
+            }));
+          }
+          return { workouts: [workout, ...s.workouts], active: null, plans: updatedPlans };
+        });
       },
 
       cancelWorkout: () => set({ active: null }),
@@ -490,6 +543,9 @@ export const useApp = create<AppState>()(
       setCycle: (cycle) => set((s) => ({ cycle, cycleStart: s.cycleStart || Date.now() })),
 
       restartCycleToday: () => set({ cycleStart: Date.now() }),
+
+      setHomeEquipment: (equipment, value) =>
+        set((s) => ({ homeEquipment: { ...s.homeEquipment, [equipment]: value } })),
 
       setReminders: (remindersEnabled, reminderHour) =>
         set({ remindersEnabled, reminderHour: Math.min(23, Math.max(0, Math.round(reminderHour))) }),
@@ -558,16 +614,71 @@ export const useApp = create<AppState>()(
                 const next = pool[(at + 1) % pool.length];
                 const eq = next.equipment;
                 const zero = eq === 'bodyweight' || eq === 'pull-up bar';
+
+                // Look up PR
+                const prev = lastPerformance(s.workouts, next.id);
+                const sets = prev
+                  ? prev.map((st) => ({ reps: st.reps, weight: zero ? 0 : st.weight, done: false }))
+                  : Array.from({ length: e.sets.length }, () => ({
+                      reps: 10,
+                      weight: zero ? 0 : (eq === 'barbell' ? 20 : (eq === 'dumbbell' ? 10 : 0)),
+                      done: false,
+                    }));
+
                 return {
                   ...e,
                   exerciseId: next.id,
                   swappedFrom: undefined,
-                  sets: e.sets.map((st) => ({ ...st, weight: zero ? 0 : st.weight })),
+                  initialExerciseId: undefined,
+                  sets,
                 };
               }),
             },
           };
         }),
+
+      easyVariant: (index) =>
+        set((s) => {
+          if (!s.active) return s;
+          return {
+            active: {
+              ...s.active,
+              exercises: s.active.exercises.map((e, i) => {
+                if (i !== index) return e;
+                const initialId = e.initialExerciseId || e.exerciseId;
+                let nextId = EASY_VARIATION[e.exerciseId];
+                if (!nextId) {
+                  // Loop back to the original starting exercise
+                  nextId = initialId;
+                }
+                if (!nextId || nextId === e.exerciseId) return e;
+                const next = EXERCISES.find((x) => x.id === nextId);
+                if (!next) return e;
+                const eq = next.equipment;
+                const zero = eq === 'bodyweight' || eq === 'pull-up bar';
+
+                // Look up PR
+                const prev = lastPerformance(s.workouts, next.id);
+                const sets = prev
+                  ? prev.map((st) => ({ reps: st.reps, weight: zero ? 0 : st.weight, done: false }))
+                  : Array.from({ length: e.sets.length }, () => ({
+                      reps: 10,
+                      weight: zero ? 0 : (eq === 'barbell' ? 20 : (eq === 'dumbbell' ? 10 : 0)),
+                      done: false,
+                    }));
+
+                return {
+                  ...e,
+                  exerciseId: next.id,
+                  initialExerciseId: initialId,
+                  swappedFrom: undefined,
+                  sets,
+                };
+              }),
+            },
+          };
+        }),
+
 
       seedDemoData: () => {
         const DAY = 24 * 3600 * 1000;
@@ -677,6 +788,7 @@ export const useApp = create<AppState>()(
           unit: 'kg',
           barWeight: 20,
           apiKeys: { exercisedb: '', gemini: '' },
+          homeEquipment: { barbell: false, dumbbell: false, 'pull-up bar': false, bench: false, band: false, 'medicine ball': false },
           schedule: [null, null, null, null, null, null, null],
           scheduleMode: 'weekly',
           cycle: [],
@@ -718,6 +830,7 @@ export const useApp = create<AppState>()(
         unit: s.unit,
         barWeight: s.barWeight,
         apiKeys: s.apiKeys,
+        homeEquipment: s.homeEquipment,
         schedule: s.schedule,
         scheduleMode: s.scheduleMode,
         cycle: s.cycle,

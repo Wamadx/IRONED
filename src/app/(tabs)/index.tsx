@@ -35,6 +35,23 @@ export default function Home() {
   const todaySlot = slotForDate(scheduleMode, schedule, cycle, cycleStart, Date.now());
   const todayPlan = todaySlot && todaySlot !== 'rest' ? plans.find((p) => p.id === todaySlot) : null;
 
+  const lastWorkoutToday = workouts.find((w) => {
+    const d1 = new Date(w.finishedAt);
+    const d2 = new Date();
+    return (
+      d1.getDate() === d2.getDate() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getFullYear() === d2.getFullYear()
+    );
+  });
+
+  const finishedToday = !!lastWorkoutToday;
+  const hasSchedule = todaySlot != null;
+  const isRestDay = todaySlot === 'rest';
+  const matchesSchedule = hasSchedule
+    ? (isRestDay ? false : lastWorkoutToday?.planId === todaySlot)
+    : true;
+
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: C.bg }}
@@ -54,7 +71,41 @@ export default function Home() {
         {thisWeek} workout{thisWeek === 1 ? '' : 's'} in the last 7 days
       </Dim>
 
-      {todaySlot === 'rest' && !active && (
+      {finishedToday && matchesSchedule && !active && (
+        <Card style={{ marginTop: 16, borderColor: C.smoke }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Ionicons name="checkmark-circle" size={16} color={C.red} />
+            <H2>Done for the day</H2>
+          </View>
+          <Dim>You have completed your scheduled workout. Rest and recover, Hunter!</Dim>
+        </Card>
+      )}
+
+      {finishedToday && !matchesSchedule && !active && (
+        <Card style={{ marginTop: 16, borderColor: C.ember }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Ionicons name="warning" size={16} color={C.ember} />
+            <H2>Workout done, but not scheduled</H2>
+          </View>
+          <Text style={{ color: C.textDim, fontSize: F.body, marginBottom: 6 }}>
+            {isRestDay
+              ? 'You completed a workout today, but today was scheduled as a Rest Day.'
+              : `You completed a different workout today than your scheduled quest: "${todayPlan?.name}".`}
+          </Text>
+          {todayPlan && (
+            <Btn
+              label={`Start Scheduled Quest: ${todayPlan.name}`}
+              style={{ marginTop: 8 }}
+              onPress={() => {
+                startWorkout(todayPlan.id);
+                router.push('/workout/active');
+              }}
+            />
+          )}
+        </Card>
+      )}
+
+      {!finishedToday && todaySlot === 'rest' && !active && (
         <Card style={{ marginTop: 16, borderColor: C.smoke }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <Ionicons name="moon" size={16} color={C.textDim} />
@@ -63,7 +114,7 @@ export default function Home() {
           <Dim>Recovery is training too. Your streak is safe.</Dim>
         </Card>
       )}
-      {todayPlan && !active && (
+      {!finishedToday && todayPlan && !active && (
         <Card style={{ marginTop: 16, borderColor: C.ember }}>
           <Dim small>TODAY’S QUEST</Dim>
           <H2>{todayPlan.name}</H2>

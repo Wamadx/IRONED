@@ -11,7 +11,7 @@ const dbKey = () => useApp.getState().apiKeys.exercisedb || EXERCISEDB_API_KEY;
 /** true when this move HAS a demo but it can't load because no ExerciseDB key is set */
 export function demoNeedsKey(name: string): boolean {
   const entry = GIF_MAP[name.toLowerCase()];
-  return !!entry && 'db' in entry && !dbKey();
+  return !!entry && !!entry.db && !entry.img && !dbKey();
 }
 
 export type GifSource =
@@ -26,20 +26,25 @@ export type GifSource =
 export function getGifSource(name: string): GifSource | null {
   const entry = GIF_MAP[name.toLowerCase()];
   if (!entry) return null;
-  if ('img' in entry) {
+
+  const key = dbKey();
+  if (key && entry.db) {
+    return {
+      kind: 'gif',
+      uri: `https://${HOST}/image?exerciseId=${entry.db}&resolution=360`,
+      headers: {
+        'X-RapidAPI-Key': key,
+        'X-RapidAPI-Host': HOST,
+      },
+    };
+  }
+
+  if (entry.img) {
     return {
       kind: 'frames',
       frames: [`${FREE_DB}/${entry.img}/0.jpg`, `${FREE_DB}/${entry.img}/1.jpg`],
     };
   }
-  const key = dbKey();
-  if (!key) return null;
-  return {
-    kind: 'gif',
-    uri: `https://${HOST}/image?exerciseId=${entry.db}&resolution=360`,
-    headers: {
-      'X-RapidAPI-Key': key,
-      'X-RapidAPI-Host': HOST,
-    },
-  };
+
+  return null;
 }

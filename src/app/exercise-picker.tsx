@@ -33,6 +33,8 @@ export default function ExercisePicker() {
   const insets = useSafeAreaInsets();
   const addExercisesToPlan = useApp((s) => s.addExercisesToPlan);
   const addExercisesToActive = useApp((s) => s.addExercisesToActive);
+  // user's available home equipment flags
+  const homeEquipment = useApp((s) => s.homeEquipment);
 
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>('all');
@@ -44,8 +46,12 @@ export default function ExercisePicker() {
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
     return EXERCISES.filter((e) => {
-      if (filter === 'home' && !e.home) return false;
-      if (filter !== 'all' && filter !== 'home' && !e.muscles.includes(filter)) return false;
+      if (filter === 'home') {
+          // show if exercise is marked home-friendly OR uses equipment the user owns at home
+          const equipmentAvailable = homeEquipment[e.equipment as keyof typeof homeEquipment] ?? false;
+          if (!e.home && !equipmentAvailable) return false;
+        }
+        if (filter !== 'all' && filter !== 'home' && !e.muscles.includes(filter)) return false;
       if (q && !e.name.toLowerCase().includes(q)) return false;
       return true;
     });

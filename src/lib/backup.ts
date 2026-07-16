@@ -6,6 +6,7 @@ import { Platform } from 'react-native';
 import { uid } from './physique';
 import { useApp } from './store';
 import type { Meal, ProgressPhoto } from './types';
+import { encrypt, decrypt } from './crypto';
 
 async function fileToB64(uri: string): Promise<string | undefined> {
   try {
@@ -60,6 +61,7 @@ async function payload(): Promise<string> {
     unit: s.unit,
     barWeight: s.barWeight,
     schedule: s.schedule,
+    apiKeysEncrypted: encrypt(s.apiKeys),
   });
 }
 
@@ -164,6 +166,20 @@ export async function importBackup(): Promise<ImportResult> {
     ).filter(Boolean) as ProgressPhoto[];
   }
 
+  // Restore embedded photos first
   useApp.getState().importAll({ ...data, progressPhotos: photos });
-  return { status: 'imported' };
-}
+
+  // Decrypt API keys if present (after importAll, so they aren't overwritten)
+  if (data.apiKeysEncrypted) {
+    const decrypted = decrypt(data.apiKeysEncrypted) as { exercisedb?: string; gemini?: string };
+    const current = useApp.getState().apiKeys;
+    const merged = {
+      exercisedb: decrypted.exercisedb ?? current.exercisedb,
+      gemini: decrypted.gemini ?? current.gemini,
+    };
+    useApp.getState().setApiKey('exercisedb', merged.exercisedb);
+    useApp.getState().setApiKey('gemini', merged.gemini);
+  } else {
+    // No encrypted API keys – nothing to do
+  }
+  return { status: 'imported' };}

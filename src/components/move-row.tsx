@@ -8,6 +8,7 @@ import type { MobilityMove } from '@/lib/exercises';
 import { getCachedGif } from '@/lib/gif-cache';
 import { demoNeedsKey, type GifSource } from '@/lib/gifs';
 import { C, F } from '@/lib/theme';
+import { useApp } from '@/lib/store';
 
 /** Cycles two demo frames so free-exercise-db demos render animated, not static. */
 function FrameAnimation({ frames }: { frames: string[] }) {
@@ -30,10 +31,14 @@ export function ActionChip({
   icon,
   label,
   onPress,
+  bgColor,
+  borderColor,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
   onPress: () => void;
+  bgColor?: string;
+  borderColor?: string;
 }) {
   return (
     <Pressable
@@ -43,9 +48,9 @@ export function ActionChip({
         flexDirection: 'row',
         alignItems: 'center',
         gap: 6,
-        backgroundColor: C.redDark,
+        backgroundColor: bgColor || C.redDark,
         borderWidth: 1,
-        borderColor: C.red,
+        borderColor: borderColor || C.red,
         borderRadius: 8,
         paddingVertical: 9,
         paddingHorizontal: 12,
@@ -69,16 +74,18 @@ export function GifPanel({
   action?: ReactNode;
 }) {
   const [source, setSource] = useState<GifSource | null | 'loading'>('loading');
+  const exercisedbKey = useApp((s) => s.apiKeys.exercisedb);
 
   useEffect(() => {
     let alive = true;
+    setSource('loading');
     getCachedGif(name).then((s) => {
       if (alive) setSource(s);
     });
     return () => {
       alive = false;
     };
-  }, [name]);
+  }, [name, exercisedbKey]);
 
   const router = useRouter();
   const keyMissing = source === null && demoNeedsKey(name);
@@ -95,7 +102,9 @@ export function GifPanel({
             <ActionChip
               icon="key"
               label="Add API key in Settings"
-              onPress={() => router.push('/settings')}
+              bgColor="rgba(255, 107, 74, 0.15)"
+              borderColor={C.ember}
+              onPress={() => router.push('/settings?focus=api')}
             />
           </View>
         </View>
