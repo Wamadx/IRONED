@@ -50,8 +50,7 @@ CLAUDE.md
 /ios
 /android
 
-# API keys live here — commit a safe (empty) config.example.ts; override locally via config.ts
-src/lib/config.ts
+# API keys — config.ts ships with safe empty defaults; override values locally or via EAS env vars
 
 # local build verification output
 dist-check/

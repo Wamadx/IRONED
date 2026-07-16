@@ -2,17 +2,15 @@
   "expo": {
     "name": "IRONED",
     "slug": "ironed",
-    "version": "1.1",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "ironed",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#0B0909",
-    
     "android": {
       "package": "com.sukago.ironed",
       "versionCode": 2,
-      
       "predictiveBackGestureEnabled": false
     },
     "web": {
@@ -29,7 +27,10 @@
           "imageWidth": 120
         }
       ],
-      "expo-sharing"
+      "expo-sharing",
+      "expo-image",
+      "expo-status-bar",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
